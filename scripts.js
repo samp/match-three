@@ -26,7 +26,9 @@ class Tile {
     }
 
     draw() {
-        ctx.drawImage(types[this.type], this.x * level.tilewidth, this.y * level.tilewidth, level.tilewidth, level.tilewidth);
+        if (this.type != "removed") {
+            ctx.drawImage(types[this.type], this.x * level.tilewidth, this.y * level.tilewidth, level.tilewidth, level.tilewidth);
+        }
 
         ctx.font = "bold 30px Arial";
         ctx.textAlign = "center";
@@ -104,7 +106,8 @@ function startGame() {
     console.log(level);
     loadImages(["tiles/a.png", "tiles/b.png", "tiles/c.png", "tiles/d.png"]);
     drawTiles();
-    findMatches();
+    setTimeout(function () { findMatches(); }, 1000);
+
 }
 
 function randomTile(array) {
@@ -200,16 +203,17 @@ function findMatches() {
 
 
     if (foundmatches == true) {
-        //    findMatches();
+        //findMatches();
     }
     console.log(level);
+    setTimeout(function () { gravity(); }, 1000);
 }
 
 function removeMatch(startx, starty, endx, endy) {
     console.log(`Removing: x ${startx} to ${endx}, y ${starty} to ${endy}`);
     for (let x = startx; x <= endx; x++) {
         for (let y = starty; y <= endy; y++) {
-            //level.tiles[x][y].type = "removed";
+            level.tiles[x][y].type = "removed";
             //console.log(level.tiles[x][y].type);
         }
     }
@@ -217,7 +221,28 @@ function removeMatch(startx, starty, endx, endy) {
 }
 
 function gravity() {
+    console.log("Starting gravity...");
+    let shifted = false;
+    for (let x = 0; x < level.columns; x++) {
+        let nexttype = "";
+        for (let y = 0; y < level.rows; y++) {
+            let currenttype = level.tiles[x][y].type;
+            if (typeof level.tiles[x][y + 1] === "undefined") {
+                nexttype = "";
+            } else {
+                nexttype = level.tiles[x][y+1].type;
+            }
 
+            if (nexttype == "removed" && currenttype != "removed") {
+                level.tiles[x][y + 1].type = currenttype;
+                level.tiles[x][y].type = "removed";
+                shifted = true;
+            }
+        }
+    }
+    if (shifted == true) {
+        setTimeout(function () { gravity(); }, 1000);
+    }
 }
 
 startGame();
