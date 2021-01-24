@@ -203,10 +203,13 @@ function findMatches() {
 
 
     if (foundmatches == true) {
-        //findMatches();
+        setTimeout(function () { gravity(); }, 1000);
+    } else {
+        // Board is valid, play OK
+        console.log("Board OK");
     }
-    console.log(level);
-    setTimeout(function () { gravity(); }, 1000);
+    //console.log(level);
+    
 }
 
 function removeMatch(startx, starty, endx, endy) {
@@ -230,7 +233,7 @@ function gravity() {
             if (typeof level.tiles[x][y + 1] === "undefined") {
                 nexttype = "";
             } else {
-                nexttype = level.tiles[x][y+1].type;
+                nexttype = level.tiles[x][y + 1].type;
             }
 
             if (nexttype == "removed" && currenttype != "removed") {
@@ -242,7 +245,22 @@ function gravity() {
     }
     if (shifted == true) {
         setTimeout(function () { gravity(); }, 1000);
+    } else {
+        setTimeout(function () { newTiles(); }, 1000);
     }
+}
+
+function newTiles() {
+    console.log("Generating new tiles");
+    for (let i = 0; i < level.columns; i++) {
+        for (let j = 0; j < level.rows; j++) {
+            // Define a tile type and a shift parameter for animation
+            if (level.tiles[i][j].type == "removed") {
+                level.tiles[i][j].type = randomTile(Object.keys(types));
+            }
+        }
+    }
+    setTimeout(function () { findMatches() }, 1000);
 }
 
 startGame();
