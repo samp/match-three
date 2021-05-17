@@ -1,6 +1,12 @@
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext("2d");
 
+// Debug mode flag
+let debug = false;
+let debugtimer = 500
+
+// Level
+canvas.addEventListener('click', function () { findClick(event); }, false);
 var canvaswidth = 0;
 
 var level = {
@@ -11,6 +17,7 @@ var level = {
     selectedtile: { selected: false, column: 0, row: 0 }
 };
 
+// Tiles
 var types = {
     a: null,
     b: null,
@@ -18,24 +25,42 @@ var types = {
     d: null
 };
 
+// Game
+var canplay = false;
+
 class Tile {
     constructor(p) {
         this.x = p.x || 0;
         this.y = p.y || 0;
+        this.canvasx = this.x * level.tilewidth;
+        this.canvasy = this.y * level.tilewidth;
         this.type = p.type;
+        this.selected = false;
     }
 
     draw() {
         if (this.type != "removed") {
-            ctx.drawImage(types[this.type], this.x * level.tilewidth, this.y * level.tilewidth, level.tilewidth, level.tilewidth);
+            ctx.drawImage(types[this.type], this.canvasx, this.canvasy, level.tilewidth, level.tilewidth);
+            if (this.selected == true) {
+                ctx.beginPath();
+                ctx.strokeStyle = "red";
+                ctx.arc(this.canvasx + level.tilewidth / 2, this.canvasy + level.tilewidth / 2, level.tilewidth / 2, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
         }
 
-        ctx.font = "bold 30px Arial";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "black";
-        ctx.fillText(this.type, this.x * level.tilewidth + level.tilewidth / 2, this.y * level.tilewidth + level.tilewidth / 2);
-        ctx.fillText(this.x, this.x * level.tilewidth + level.tilewidth / 2 - 20, this.y * level.tilewidth + level.tilewidth / 2 + 30);
-        ctx.fillText(this.y, this.x * level.tilewidth + level.tilewidth / 2 + 20, this.y * level.tilewidth + level.tilewidth / 2 + 30);
+        if (debug == true) {
+            ctx.font = "bold 30px Arial";
+            ctx.textAlign = "center";
+            ctx.fillStyle = "black";
+            ctx.fillText(this.type, this.canvasx + level.tilewidth / 2, this.canvasy + level.tilewidth / 2);
+            ctx.fillText(this.x, this.canvasx + level.tilewidth / 2 - 20, this.canvasy + level.tilewidth / 2 + 30);
+            ctx.fillText(this.y, this.canvasx + level.tilewidth / 2 + 20, this.canvasy + level.tilewidth / 2 + 30);
+        }
+    }
+
+    click() {
+        this.selected = !this.selected;
     }
 };
 
@@ -106,7 +131,11 @@ function startGame() {
     console.log(level);
     loadImages(["tiles/a.png", "tiles/b.png", "tiles/c.png", "tiles/d.png"]);
     drawTiles();
-    setTimeout(function () { findMatches(); }, 1000);
+    if (debug == true) {
+        setTimeout(function () { findMatches(); }, debugtimer);
+    } else {
+        findMatches();
+    }
 
 }
 
@@ -203,13 +232,18 @@ function findMatches() {
 
 
     if (foundmatches == true) {
-        setTimeout(function () { gravity(); }, 1000);
+        if (debug == true) {
+            setTimeout(function () { gravity(); }, debugtimer);
+        } else {
+            gravity();
+        }
     } else {
         // Board is valid, play OK
         console.log("Board OK");
+        canplay = true;
     }
     //console.log(level);
-    
+
 }
 
 function removeMatch(startx, starty, endx, endy) {
@@ -244,9 +278,17 @@ function gravity() {
         }
     }
     if (shifted == true) {
-        setTimeout(function () { gravity(); }, 1000);
+        if (debug == true) {
+            setTimeout(function () { gravity(); }, debugtimer);
+        } else {
+            gravity();
+        }
     } else {
-        setTimeout(function () { newTiles(); }, 1000);
+        if (debug == true) {
+            setTimeout(function () { newTiles(); }, debugtimer);
+        } else {
+            newTiles();
+        }
     }
 }
 
@@ -260,7 +302,27 @@ function newTiles() {
             }
         }
     }
-    setTimeout(function () { findMatches() }, 1000);
+    if (debug == true) {
+        setTimeout(function () { findMatches() }, debugtimer);
+    } else {
+        findMatches()
+    }
+}
+
+function findClick(event) {
+    var x = event.pageX - canvas.offsetLeft,
+        y = event.pageY - canvas.offsetTop;
+    if (canplay == true) {
+        for (let i = 0; i < level.columns; i++) {
+            for (let j = 0; j < level.rows; j++) {
+                if (y > level.tiles[i][j].canvasy && y < level.tiles[i][j].canvasy + level.tilewidth && x > level.tiles[i][j].canvasx && x < level.tiles[i][j].canvasx + level.tilewidth) {
+                    console.log(`clicked ${level.tiles[i][j].type} at: ${level.tiles[i][j].x}, ${level.tiles[i][j].y}`);
+                    level.tiles[i][j].click();
+                }
+            }
+        }
+    }
+
 }
 
 startGame();
