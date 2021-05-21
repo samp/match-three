@@ -2,6 +2,7 @@ let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext("2d");
 
 let scoredisplay = document.getElementById('score');
+let clickdisplay = document.getElementById('clickdisplay');
 
 // Debug mode flag
 let debug = false;
@@ -136,6 +137,7 @@ function startGame() {
     loadImages(["tiles/a.png", "tiles/b.png", "tiles/c.png", "tiles/d.png"]);
     drawTiles();
     if (debug == true) {
+        clickdisplay.style.display = "block";
         setTimeout(function () { findMatches(); }, debugtimer);
     } else {
         findMatches();
@@ -243,6 +245,7 @@ function findMatches() {
             setTimeout(function () { gravity(); }, debugtimer);
         } else {
             gravity();
+            findMatches();
         }
     } else {
         // Board is valid, play OK
@@ -318,27 +321,42 @@ function newTiles() {
 function checkClick(tile) {
     if (clicked == null) {
         // Ok to click
-        tile.click();
+        tile.selected = true;
+        //tile.click();
         clicked = tile;
     } else if (clicked == tile) {
         // Need to remove tile
-        tile.click();
+        tile.selected = false;
+        //tile.click();
         clicked = null;
     } else {
         if ((Math.abs(clicked.x - tile.x) == 1 && !(Math.abs(clicked.y - tile.y) == 1)) || (!(Math.abs(clicked.x - tile.x) == 1) && Math.abs(clicked.y - tile.y) == 1)) {
             // Swap
             console.log("Swap")
-            clicked.click();
-            tile.click(tile);
+            tile.selected = false;
+            clicked.selected = false;
+            //clicked.click();
+            //tile.click(tile);
             swapTiles(tile, clicked);
             clicked = null;
         } else {
             // Clear clicks
-            clicked.click();
-            tile.click();
+            clicked.selected = false;
+            tile.selected = false;
+            //clicked.click();
+            //tile.click();
             clicked = tile;
         }
     }
+    if (debug == true){
+        if (clicked == null){
+            clickdisplay.innerHTML = "null";
+        } else {
+            clickdisplay.innerHTML = `${clicked.type} at ${clicked.x}, ${clicked.y}`;
+        }
+        
+    }
+
     console.log("Already clicked: " + clicked.type);
     console.log(clicked);
     console.log("This tile: ");
@@ -359,7 +377,6 @@ function findClick(event) {
             }
         }
     }
-
 }
 
 function swapTiles(tileA, tileB) {
