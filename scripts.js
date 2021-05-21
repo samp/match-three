@@ -27,6 +27,7 @@ var types = {
 
 // Game
 var canplay = false;
+var clicked = null;
 
 class Tile {
     constructor(p) {
@@ -230,7 +231,6 @@ function findMatches() {
         }
     }
 
-
     if (foundmatches == true) {
         if (debug == true) {
             setTimeout(function () { gravity(); }, debugtimer);
@@ -243,7 +243,6 @@ function findMatches() {
         canplay = true;
     }
     //console.log(level);
-
 }
 
 function removeMatch(startx, starty, endx, endy) {
@@ -309,6 +308,35 @@ function newTiles() {
     }
 }
 
+function checkClick(tile) {
+    if (clicked == null) {
+        // Ok to click
+        tile.click();
+        clicked = tile;
+    } else if (clicked == tile) {
+        // Need to remove tile
+        tile.click();
+        clicked = null;
+    } else {
+        if ((Math.abs(clicked.x - tile.x) == 1 && !(Math.abs(clicked.y - tile.y) == 1)) || (!(Math.abs(clicked.x - tile.x) == 1) && Math.abs(clicked.y - tile.y) == 1)) {
+            // Swap
+            console.log("Swap")
+            clicked.click();
+            tile.click(tile);
+            clicked = tile;
+        } else {
+            // Clear clicks
+            clicked.click();
+            tile.click();
+            clicked = tile;
+        }
+    }
+    console.log("This tile: ");
+    console.log(tile);
+    console.log("Already clicked: " + clicked.type);
+    console.log(clicked);
+}
+
 function findClick(event) {
     var x = event.pageX - canvas.offsetLeft,
         y = event.pageY - canvas.offsetTop;
@@ -317,7 +345,7 @@ function findClick(event) {
             for (let j = 0; j < level.rows; j++) {
                 if (y > level.tiles[i][j].canvasy && y < level.tiles[i][j].canvasy + level.tilewidth && x > level.tiles[i][j].canvasx && x < level.tiles[i][j].canvasx + level.tilewidth) {
                     console.log(`clicked ${level.tiles[i][j].type} at: ${level.tiles[i][j].x}, ${level.tiles[i][j].y}`);
-                    level.tiles[i][j].click();
+                    checkClick(level.tiles[i][j]);
                 }
             }
         }
