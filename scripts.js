@@ -1,6 +1,8 @@
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext("2d");
 
+let scoredisplay = document.getElementById('score');
+
 // Debug mode flag
 let debug = false;
 let debugtimer = 500
@@ -28,6 +30,7 @@ var types = {
 // Game
 var canplay = false;
 var clicked = null;
+var score = 0;
 
 class Tile {
     constructor(p) {
@@ -188,6 +191,10 @@ function findMatches() {
                 console.log(`Found match: x ${matchstartx} to ${matchendx}, y ${matchstarty} to ${matchendy}, type ${currenttype}, streak ${streak}`);
                 removeMatch(matchstartx, matchstarty, matchendx, matchendy);
                 streak = 1;
+                if (canplay == true){
+                    score += 100 * streak;
+                    scoredisplay.innerHTML = score;
+                }
             } else if (currenttype != nexttype && streak < 3) {
                 streak = 1;
             }
@@ -323,7 +330,8 @@ function checkClick(tile) {
             console.log("Swap")
             clicked.click();
             tile.click(tile);
-            clicked = tile;
+            swapTiles(tile, clicked);
+            clicked = null;
         } else {
             // Clear clicks
             clicked.click();
@@ -331,10 +339,11 @@ function checkClick(tile) {
             clicked = tile;
         }
     }
-    console.log("This tile: ");
-    console.log(tile);
     console.log("Already clicked: " + clicked.type);
     console.log(clicked);
+    console.log("This tile: ");
+    console.log(tile);
+
 }
 
 function findClick(event) {
@@ -350,6 +359,23 @@ function findClick(event) {
             }
         }
     }
+
+}
+
+function swapTiles(tileA, tileB) {
+    console.log("swaptiles wuz here");
+    for (let i = 0; i < level.columns; i++) {
+        for (let j = 0; j < level.rows; j++) {
+            if (level.tiles[i][j] == tileA) {
+                level.tiles[i][j] = tileB;
+                console.log("Swapped A");
+            } else if (level.tiles[i][j] == tileB){
+                level.tiles[i][j] = tileA;
+                console.log("Swapped B");
+            }
+        }
+    }
+    findMatches();
 
 }
 
